@@ -1,5 +1,5 @@
 name: 'Delete Releases'
-description: 'delete a release according to its id or name'
+description: 'This action can delete release/pre-release/draft of given repo.'
 inputs:
   repo:
     description: 'Operation target repository, the format is "owner/repo".'
@@ -39,3 +39,6 @@ inputs:
 runs:
   using: 'node16'
   main: 'dist/index.js'
+branding:
+  icon: 'package'
+  color: 'gray-dark'

@@ -1,6 +1,6 @@
 # Delete Release Action
 
-This action can delete release/pre-release/draft if given repo.
+This action can delete release/pre-release/draft of given repo.
 
 ## Inputs
 
