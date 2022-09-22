@@ -1,0 +1,27 @@
+{
+  "name": "delete-release-action",
+  "version": "1.0.0",
+  "description": "Github action for deleting releases",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "ncc build ./src/index.ts --license LICENSE"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sgpublic/delete-release-action.git"
+  },
+  "author": "Madray Haven",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/sgpublic/delete-release-action/issues"
+  },
+  "homepage": "https://github.com/sgpublic/delete-release-action#readme",
+  "devDependencies": {
+    "typescript": "^4.8.3",
+    "@vercel/ncc": "^0.34.0"
+  },
+  "dependencies": {
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.0.3"
+  }
+}
