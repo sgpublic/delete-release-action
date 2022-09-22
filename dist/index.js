@@ -9527,31 +9527,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Github = void 0;
 const github = __importStar(__nccwpck_require__(5438));
+const core = __importStar(__nccwpck_require__(2186));
 const Input_1 = __nccwpck_require__(2660);
 class Github {
     constructor() {
-        this.releases = null;
         this.octokit = github.getOctokit(Input_1.Input.Github.TOKEN).rest;
     }
     listRelease() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.releases == null) {
-                this.releases = (yield this.octokit.repos.listReleases(Input_1.Input.Github.REPO)).data;
-            }
-            return this.releases;
+            return (yield this.octokit.repos.listReleases(Input_1.Input.Github.REPO)).data;
         });
     }
-    dropRelease(id, dropTag) {
+    dropRelease(release, dropTag) {
         return __awaiter(this, void 0, void 0, function* () {
-            for (const release of (yield this.listRelease()).filter((release) => release.id === id)) {
-                for (const asset of release.assets) {
-                    yield this.octokit.repos.deleteReleaseAsset(Object.assign(Input_1.Input.Github.REPO, { asset_id: asset.id }));
-                }
-                yield this.octokit.repos.deleteRelease(Object.assign(Input_1.Input.Github.REPO, { release_id: release.release_id }));
-                if (!dropTag)
-                    continue;
-                yield this.octokit.git.deleteRef(Object.assign(Input_1.Input.Github.REPO, { ref: `tags/${release.tag_name}` }));
+            for (const asset of release.assets) {
+                yield this.octokit.repos.deleteReleaseAsset(Object.assign(Input_1.Input.Github.REPO, { asset_id: asset.id }));
+                core.debug(`drop release assets: [${release.name}] ${asset.name}`);
             }
+            core.debug(`drop release: ${release.name}`);
+            yield this.octokit.repos.deleteRelease(Object.assign(Input_1.Input.Github.REPO, { release_id: release.id }));
+            if (!dropTag)
+                return;
+            core.debug(`drop tag: ${release.tag_name}`);
+            yield this.octokit.git.deleteRef(Object.assign(Input_1.Input.Github.REPO, { ref: `tags/${release.tag_name}` }));
+            core.info(`release dropped: ${release.name}`);
         });
     }
     static getInstance() {
@@ -9698,54 +9697,56 @@ const Github_1 = __nccwpck_require__(6703);
 const Input_1 = __nccwpck_require__(2660);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const release = (yield Github_1.Github.getInstance().listRelease());
+        const release = yield Github_1.Github.getInstance().listRelease();
+        core.debug(`release list data: \n${release}`);
         if (release.length <= 0) {
-            core.info("No release found, action finish!");
+            core.info(`No release found, action finish!`);
             return;
         }
-        core.info("Release total count: " + release.length);
+        core.info(`Release total count: ${release.length}`);
         if (Input_1.Input.Release.DROP) {
             const releases = release.filter((release) => {
                 (!release.draft && !release.prerelease);
             });
             if (release.length > 0) {
-                core.info("Find release count: " + release.length);
+                core.info(`Find release count: ${release.length}`);
                 yield dropRelease(releases, Input_1.Input.Release.KEEP_COUNT + 1, Input_1.Input.Release.DROP_TAG);
             }
             else {
-                core.info("No release found, skip action.");
+                core.warning(`No release found, skip action.`);
             }
         }
         else {
-            core.info("Skip drop release.");
+            core.info(`Skip drop release.`);
         }
         if (Input_1.Input.PreRelease.DROP) {
-            const releases = release.filter((release) => release.prerelease);
-            if (releases.length > 0) {
-                core.info("Find pre-release count: " + release.length);
-                yield dropRelease(releases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
+            const prereleases = release.filter((release) => release.prerelease);
+            if (prereleases.length > 0) {
+                core.info(`Find pre-release count: ${release.length}`);
+                yield dropRelease(prereleases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
             }
             else {
-                core.info("No pre-release found, skip action.");
+                core.warning(`No pre-release found, skip action.`);
             }
         }
         else {
-            core.info("Skip drop pre-release.");
+            core.info(`Skip drop pre-release.`);
         }
         if (Input_1.Input.Draft.DROP) {
-            const releases = release.filter((release) => release.draft);
-            if (releases.length > 0) {
-                core.info("Find draft count: " + release.length);
-                yield dropRelease(releases, 0, false);
+            const draft = (yield Github_1.Github.getInstance().listRelease())
+                .filter((release) => release.draft);
+            if (draft.length > 0) {
+                core.info(`Find draft count: ${release.length}`);
+                yield dropRelease(draft, 0, false);
             }
             else {
-                core.info("No draft found, skip action.");
+                core.warning(`No draft found, skip action.`);
             }
         }
         else {
-            core.info("Skip drop draft.");
+            core.info(`Skip drop draft.`);
         }
-        core.info("All task finished!");
+        core.info(`All task finished!`);
     });
 }
 function dropRelease(releases, keep, dropTag) {
@@ -9755,7 +9756,7 @@ function dropRelease(releases, keep, dropTag) {
         });
         const github = Github_1.Github.getInstance();
         for (let i = keep; i < sorted.length; i++) {
-            yield github.dropRelease(sorted[i].release_id, dropTag);
+            yield github.dropRelease(sorted[i], dropTag);
         }
     });
 }
