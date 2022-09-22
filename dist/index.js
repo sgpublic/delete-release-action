@@ -9744,6 +9744,7 @@ function dropRelease(releases, keep) {
         }
     });
 }
+run();
 
 
 /***/ }),
