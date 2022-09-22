@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import {Github} from "./core/Github";
 import {Input} from "./core/Input";
+import * as github from "@actions/github";
 
 async function run() {
     const release = (await Github.getInstance().listRelease());
@@ -16,7 +17,7 @@ async function run() {
         })
         if (release.length > 0) {
             core.info("Find release count: " + release.length)
-            await dropRelease(releases, Input.Release.KEEP_COUNT + 1);
+            await dropRelease(releases, Input.Release.KEEP_COUNT + 1, Input.Release.DROP_TAG);
         } else {
             core.info("No release found, skip action.")
         }
@@ -24,12 +25,11 @@ async function run() {
         core.info("Skip drop release.")
     }
 
-
     if (Input.PreRelease.DROP) {
         const releases = release.filter((release: { prerelease: boolean }) => release.prerelease)
         if (releases.length > 0) {
             core.info("Find pre-release count: " + release.length)
-            await dropRelease(releases, Input.PreRelease.KEEP_COUNT + 1);
+            await dropRelease(releases, Input.PreRelease.KEEP_COUNT + 1, Input.PreRelease.DROP_TAG);
         } else {
             core.info("No pre-release found, skip action.")
         }
@@ -42,7 +42,7 @@ async function run() {
         const releases = release.filter((release: { draft: boolean }) => release.draft)
         if (releases.length > 0) {
             core.info("Find draft count: " + release.length)
-            await dropRelease(releases, 0);
+            await dropRelease(releases, 0, false);
         } else {
             core.info("No draft found, skip action.")
         }
@@ -53,7 +53,7 @@ async function run() {
     core.info("All task finished!")
 }
 
-async function dropRelease(releases: any, keep: number) {
+async function dropRelease(releases: any, keep: number, dropTag: boolean) {
     const sorted = releases.sort(
         function (rA: { published_at: string; }, rB: { published_at: string; }) {
             return rB.published_at.localeCompare(rA.published_at);
@@ -61,7 +61,7 @@ async function dropRelease(releases: any, keep: number) {
     )
     const github = Github.getInstance();
     for (let i = keep; i < sorted.length; i++) {
-        await github.dropRelease(sorted[i].release_id);
+        await github.dropRelease(sorted[i].release_id, dropTag);
     }
 }
 

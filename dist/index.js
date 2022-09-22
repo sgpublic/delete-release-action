@@ -9541,13 +9541,16 @@ class Github {
             return this.releases;
         });
     }
-    dropRelease(id) {
+    dropRelease(id, dropTag) {
         return __awaiter(this, void 0, void 0, function* () {
             for (const release of (yield this.listRelease()).filter((release) => release.id === id)) {
                 for (const asset of release.assets) {
                     yield this.octokit.repos.deleteReleaseAsset(Object.assign(Input_1.Input.Github.REPO, { asset_id: asset.id }));
                 }
                 yield this.octokit.repos.deleteRelease(Object.assign(Input_1.Input.Github.REPO, { release_id: release.release_id }));
+                if (!dropTag)
+                    continue;
+                yield this.octokit.git.deleteRef(Object.assign(Input_1.Input.Github.REPO, { ref: `tags/${release.tag_name}` }));
             }
         });
     }
@@ -9601,7 +9604,13 @@ class Input {
 exports.Input = Input;
 Input.Github = class {
     static get TOKEN() {
-        return core.getInput("token");
+        const githubToken = process.env.GITHUB_TOKEN;
+        if (githubToken == undefined) {
+            core.error("No GITHUB_TOKEN found. pass `GITHUB_TOKEN` as env!");
+            process.exit(1);
+            return '';
+        }
+        return githubToken;
     }
     static get REPO() {
         const repo = core.getInput("repo");
@@ -9622,6 +9631,9 @@ Input.Release = class {
     static get KEEP_COUNT() {
         return Number(core.getInput("release-keep-count"));
     }
+    static get DROP_TAG() {
+        return core.getBooleanInput("release-drop-tag");
+    }
 };
 Input.PreRelease = class {
     static get DROP() {
@@ -9629,6 +9641,9 @@ Input.PreRelease = class {
     }
     static get KEEP_COUNT() {
         return Number(core.getInput("pre-release-keep-count"));
+    }
+    static get DROP_TAG() {
+        return core.getBooleanInput("pre-release-drop-tag");
     }
 };
 Input.Draft = class {
@@ -9695,7 +9710,7 @@ function run() {
             });
             if (release.length > 0) {
                 core.info("Find release count: " + release.length);
-                yield dropRelease(releases, Input_1.Input.Release.KEEP_COUNT + 1);
+                yield dropRelease(releases, Input_1.Input.Release.KEEP_COUNT + 1, Input_1.Input.Release.DROP_TAG);
             }
             else {
                 core.info("No release found, skip action.");
@@ -9708,7 +9723,7 @@ function run() {
             const releases = release.filter((release) => release.prerelease);
             if (releases.length > 0) {
                 core.info("Find pre-release count: " + release.length);
-                yield dropRelease(releases, Input_1.Input.PreRelease.KEEP_COUNT + 1);
+                yield dropRelease(releases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
             }
             else {
                 core.info("No pre-release found, skip action.");
@@ -9721,7 +9736,7 @@ function run() {
             const releases = release.filter((release) => release.draft);
             if (releases.length > 0) {
                 core.info("Find draft count: " + release.length);
-                yield dropRelease(releases, 0);
+                yield dropRelease(releases, 0, false);
             }
             else {
                 core.info("No draft found, skip action.");
@@ -9733,14 +9748,14 @@ function run() {
         core.info("All task finished!");
     });
 }
-function dropRelease(releases, keep) {
+function dropRelease(releases, keep, dropTag) {
     return __awaiter(this, void 0, void 0, function* () {
         const sorted = releases.sort(function (rA, rB) {
             return rB.published_at.localeCompare(rA.published_at);
         });
         const github = Github_1.Github.getInstance();
         for (let i = keep; i < sorted.length; i++) {
-            yield github.dropRelease(sorted[i].release_id);
+            yield github.dropRelease(sorted[i].release_id, dropTag);
         }
     });
 }

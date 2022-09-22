@@ -17,7 +17,7 @@ export class Github {
         return this.releases
     }
 
-    public async dropRelease(id: any) {
+    public async dropRelease(id: any, dropTag: boolean) {
         for (const release of (await this.listRelease()).filter(
             (release: { id: any; }) => release.id === id,
         )) {
@@ -28,6 +28,10 @@ export class Github {
             }
             await this.octokit.repos.deleteRelease(Object.assign(
                 Input.Github.REPO, { release_id: release.release_id }
+            ));
+            if (!dropTag) continue;
+            await this.octokit.git.deleteRef(Object.assign(
+                Input.Github.REPO, { ref: `tags/${release.tag_name}` }
             ));
         }
     }
