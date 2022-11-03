@@ -28,7 +28,7 @@ async function run() {
     if (Input.PreRelease.DROP) {
         const prereleases = release.filter((release: any) => release.prerelease);
         if (prereleases.length > 0) {
-            core.info(`Find pre-release count: ${release.length}`);
+            core.info(`Find pre-release count: ${prereleases.length}`);
             await dropRelease(prereleases, Input.PreRelease.KEEP_COUNT + 1, Input.PreRelease.DROP_TAG);
         } else {
             core.warning(`No pre-release found, skip action.`);
