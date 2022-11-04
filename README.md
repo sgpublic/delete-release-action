@@ -44,9 +44,9 @@ This example will:
 + Drop all the draft release.
 
 ```yml
-  - uses: sgpublic/delete-release-action@v1.0
+  - uses: sgpublic/delete-release-action@main
     with:
-      repo: <owner>/<repoName> # defaults to current repo
+      # repo: '<owner>/<repoName>' # you can input a another repo here, defaults to current repo
       release-drop: true
       release-keep-count: 2
       release-drop-tag: true
