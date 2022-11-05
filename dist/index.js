@@ -9722,7 +9722,7 @@ function run() {
         if (Input_1.Input.PreRelease.DROP) {
             const prereleases = release.filter((release) => release.prerelease);
             if (prereleases.length > 0) {
-                core.info(`Find pre-release count: ${release.length}`);
+                core.info(`Find pre-release count: ${prereleases.length}`);
                 yield dropRelease(prereleases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
             }
             else {
@@ -9736,7 +9736,7 @@ function run() {
             const draft = (yield Github_1.Github.getInstance().listRelease())
                 .filter((release) => release.draft);
             if (draft.length > 0) {
-                core.info(`Find draft count: ${release.length}`);
+                core.info(`Find draft count: ${draft.length}`);
                 yield dropRelease(draft, 0, false);
             }
             else {

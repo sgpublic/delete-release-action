@@ -42,7 +42,7 @@ async function run() {
         const draft = (await Github.getInstance().listRelease())
             .filter((release: any) => release.draft);
         if (draft.length > 0) {
-            core.info(`Find draft count: ${release.length}`);
+            core.info(`Find draft count: ${draft.length}`);
             await dropRelease(draft, 0, false);
         } else {
             core.warning(`No draft found, skip action.`);
