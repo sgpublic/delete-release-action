@@ -57,7 +57,11 @@ async function run() {
 async function dropRelease(releases: any, keep: number, dropTag: boolean) {
     const sorted = releases.sort(
         function (rA: any, rB: any) {
-            return rB.published_at.localeCompare(rA.published_at);
+            if (rB.published_at != null && rA.published_at){
+                return rB.published_at.localeCompare(rA.published_at);
+            } else {
+                return rB.name.localeCompare(rA.name);
+            }
         },
     )
     const github = Github.getInstance();
