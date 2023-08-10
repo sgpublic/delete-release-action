@@ -36,6 +36,10 @@ inputs:
     description: 'Whether to delete the draft.'
     required: true
     default: 'true'
+  draft-drop-count:
+    description: 'The number of draft except the latest draft reserved, "-1" means delete all.'
+    required: true
+    default: '-1'
 runs:
   using: 'node16'
   main: 'dist/index.js'
