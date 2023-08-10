@@ -1,6 +1,6 @@
 {
   "name": "delete-release-action",
-  "version": "1.0.0",
+  "version": "1.1",
   "description": "Github action for deleting releases",
   "main": "./src/index.ts",
   "scripts": {

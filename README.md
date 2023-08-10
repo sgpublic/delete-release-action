@@ -36,6 +36,10 @@ This action can delete release/pre-release/draft of given repo.
 
 **Optional** Whether to delete the draft, default is `true`.
 
+## `draft-drop-count`
+
+**Optional** The number of draft except the latest draft reserved, "-1" means delete all, default is `-1`.
+
 ## Example usage
 
 This example will:
@@ -44,7 +48,7 @@ This example will:
 + Drop all the draft release.
 
 ```yml
-  - uses: sgpublic/delete-release-action@v1.0
+  - uses: sgpublic/delete-release-action@v1.1
     with:
       # repo: '<owner>/<repoName>' # you can input a another repo here, defaults to current repo
       release-drop: true
@@ -54,6 +58,7 @@ This example will:
       pre-release-keep-count: -1
       pre-release-drop-tag: true
       draft-drop: true
+      draft-drop-count: -1
     env:
       GITHUB_TOKEN: ${{ secrets.TOKEN }}
 ```

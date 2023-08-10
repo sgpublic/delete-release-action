@@ -53,5 +53,8 @@ export class Input {
         public static get DROP(): boolean {
             return core.getBooleanInput("draft-drop");
         }
+        public static get KEEP_COUNT(): number {
+            return Number(core.getInput("draft-drop-count"));
+        }
     }
 }

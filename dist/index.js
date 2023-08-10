@@ -9665,6 +9665,9 @@ Input.Draft = class {
     static get DROP() {
         return core.getBooleanInput("draft-drop");
     }
+    static get KEEP_COUNT() {
+        return Number(core.getInput("draft-drop-count"));
+    }
 };
 
 
@@ -9753,7 +9756,7 @@ function run() {
                 .filter((release) => release.draft);
             if (draft.length > 0) {
                 core.info(`Find draft count: ${draft.length}`);
-                yield dropRelease(draft, 0, false);
+                yield dropRelease(draft, Input_1.Input.Draft.KEEP_COUNT + 1, false);
             }
             else {
                 core.warning(`No draft found, skip action.`);
