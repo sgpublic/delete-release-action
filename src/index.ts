@@ -26,7 +26,9 @@ async function run() {
     }
 
     if (Input.PreRelease.DROP) {
-        const prereleases = release.filter((release: any) => release.prerelease);
+        const prereleases = release.filter((release: any) => {
+            (release.prerelease && !release.draft)
+        });
         if (prereleases.length > 0) {
             core.info(`Find pre-release count: ${prereleases.length}`);
             await dropRelease(prereleases, Input.PreRelease.KEEP_COUNT + 1, Input.PreRelease.DROP_TAG);

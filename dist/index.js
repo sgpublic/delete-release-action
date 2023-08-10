@@ -9745,7 +9745,9 @@ function run() {
             core.info(`Skip drop release.`);
         }
         if (Input_1.Input.PreRelease.DROP) {
-            const prereleases = release.filter((release) => release.prerelease);
+            const prereleases = release.filter((release) => {
+                (release.prerelease && !release.draft);
+            });
             if (prereleases.length > 0) {
                 core.info(`Find pre-release count: ${prereleases.length}`);
                 yield dropRelease(prereleases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
