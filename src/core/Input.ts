@@ -30,7 +30,7 @@ export class Input {
             return core.getBooleanInput("release-drop");
         }
         public static get KEEP_COUNT(): number {
-            return Number(core.getInput("release-keep-count"));
+            return Math.max(Number(core.getInput("release-keep-count")));
         }
         public static get DROP_TAG(): boolean {
             return core.getBooleanInput("release-drop-tag");
@@ -42,7 +42,7 @@ export class Input {
             return core.getBooleanInput("pre-release-drop");
         }
         public static get KEEP_COUNT(): number {
-            return Number(core.getInput("pre-release-keep-count"));
+            return Math.max(Number(core.getInput("pre-release-keep-count")), -1);
         }
         public static get DROP_TAG(): boolean {
             return core.getBooleanInput("pre-release-drop-tag");
@@ -58,7 +58,7 @@ export class Input {
             if (value === "") {
                 return -1;
             } else {
-                return Number(value);
+                return Math.max(Number(value), -1);
             }
         }
     }

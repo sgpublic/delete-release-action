@@ -9644,7 +9644,7 @@ Input.Release = class {
         return core.getBooleanInput("release-drop");
     }
     static get KEEP_COUNT() {
-        return Number(core.getInput("release-keep-count"));
+        return Math.max(Number(core.getInput("release-keep-count")));
     }
     static get DROP_TAG() {
         return core.getBooleanInput("release-drop-tag");
@@ -9655,7 +9655,7 @@ Input.PreRelease = class {
         return core.getBooleanInput("pre-release-drop");
     }
     static get KEEP_COUNT() {
-        return Number(core.getInput("pre-release-keep-count"));
+        return Math.max(Number(core.getInput("pre-release-keep-count")), -1);
     }
     static get DROP_TAG() {
         return core.getBooleanInput("pre-release-drop-tag");
@@ -9671,7 +9671,7 @@ Input.Draft = class {
             return -1;
         }
         else {
-            return Number(value);
+            return Math.max(Number(value), -1);
         }
     }
 };
