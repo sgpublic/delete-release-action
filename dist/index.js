@@ -9666,7 +9666,13 @@ Input.Draft = class {
         return core.getBooleanInput("draft-drop");
     }
     static get KEEP_COUNT() {
-        return Number(core.getInput("draft-drop-count"));
+        const value = core.getInput("draft-drop-count");
+        if (value === "") {
+            return -1;
+        }
+        else {
+            return Number(value);
+        }
     }
 };
 
