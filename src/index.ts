@@ -45,7 +45,7 @@ async function run() {
             .filter((release: any) => release.draft);
         if (draft.length > 0) {
             core.info(`Find draft count: ${draft.length}`);
-            await dropRelease(draft, Input.Draft.KEEP_COUNT + 1, false);
+            await dropRelease(draft, Input.Draft.KEEP_COUNT + 1, Input.Draft.DROP_TAG);
         } else {
             core.warning(`No draft found, skip action.`);
         }

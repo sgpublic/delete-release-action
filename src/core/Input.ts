@@ -61,5 +61,8 @@ export class Input {
                 return Math.max(Number(value), -1);
             }
         }
+        public static get DROP_TAG(): boolean {
+            return core.getBooleanInput("draft-drop-tag");
+        }
     }
 }
