@@ -41,7 +41,7 @@ inputs:
     required: true
     default: '-1'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: 'package'

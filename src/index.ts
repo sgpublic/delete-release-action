@@ -3,37 +3,37 @@ import {Github} from "./core/Github";
 import {Input} from "./core/Input";
 
 async function run() {
-    const release = await Github.getInstance().listRelease();
-    core.debug(`release list data: \n${release}`)
-    if (release.length <= 0) {
-        core.info(`No release found, action finish!`);
+    const allReleases = await Github.getInstance().listReleases();
+    core.debug(`Releases list data: \n${allReleases}`)
+    if (allReleases.length <= 0) {
+        core.info(`No releases found, action finished!`);
         return;
     }
-    core.info(`Release total count: ${release.length}`);
+    core.info(`Releases total count: ${allReleases.length}`);
 
     if (Input.Release.DROP) {
-        const releases = release.filter((release: any) => {
-            (!release.draft && !release.prerelease)
+        const releases = allReleases.filter((release: any) => {
+            return !release.draft && !release.prerelease
         });
-        if (release.length > 0) {
-            core.info(`Find release count: ${release.length}`);
-            await dropRelease(releases, Input.Release.KEEP_COUNT + 1, Input.Release.DROP_TAG);
+        if (releases.length > 0) {
+            core.info(`Filtered release count: ${releases.length}`);
+            await dropReleases(releases, Input.Release.KEEP_COUNT + 1, Input.Release.DROP_TAG);
         } else {
-            core.warning(`No release found, skip action.`);
+            core.warning(`No releases found, skip action.`);
         }
     } else {
         core.info(`Skip drop release.`);
     }
 
     if (Input.PreRelease.DROP) {
-        const prereleases = release.filter((release: any) => {
-            (release.prerelease && !release.draft)
+        const prereleases = allReleases.filter((release: any) => {
+            return release.prerelease && !release.draft
         });
         if (prereleases.length > 0) {
-            core.info(`Find pre-release count: ${prereleases.length}`);
-            await dropRelease(prereleases, Input.PreRelease.KEEP_COUNT + 1, Input.PreRelease.DROP_TAG);
+            core.info(`Filtered pre-release count: ${prereleases.length}`);
+            await dropReleases(prereleases, Input.PreRelease.KEEP_COUNT + 1, Input.PreRelease.DROP_TAG);
         } else {
-            core.warning(`No pre-release found, skip action.`);
+            core.warning(`No pre-releases found, skip action.`);
         }
     } else {
         core.info(`Skip drop pre-release.`);
@@ -41,13 +41,13 @@ async function run() {
 
 
     if (Input.Draft.DROP) {
-        const draft = (await Github.getInstance().listRelease())
+        const drafts = (await Github.getInstance().listReleases())
             .filter((release: any) => release.draft);
-        if (draft.length > 0) {
-            core.info(`Find draft count: ${draft.length}`);
-            await dropRelease(draft, Input.Draft.KEEP_COUNT + 1, false);
+        if (drafts.length > 0) {
+            core.info(`Filtered draft count: ${drafts.length}`);
+            await dropReleases(drafts, Input.Draft.KEEP_COUNT + 1, false);
         } else {
-            core.warning(`No draft found, skip action.`);
+            core.warning(`No drafts found, skip action.`);
         }
     } else {
         core.info(`Skip drop draft.`);
@@ -56,7 +56,7 @@ async function run() {
     core.info(`All task finished!`);
 }
 
-async function dropRelease(releases: any, keep: number, dropTag: boolean) {
+async function dropReleases(releases: any, keep: number, dropTag: boolean) {
     const sorted = releases.sort(
         function (rA: any, rB: any) {
             if (rB.published_at != null && rA.published_at){

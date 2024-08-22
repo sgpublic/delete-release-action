@@ -9547,26 +9547,28 @@ const core = __importStar(__nccwpck_require__(2186));
 const Input_1 = __nccwpck_require__(2660);
 class Github {
     constructor() {
-        this.octokit = github.getOctokit(Input_1.Input.Github.TOKEN).rest;
+        const octokit = github.getOctokit(Input_1.Input.Github.TOKEN);
+        this.octokitRest = octokit.rest;
+        this.octokitPaginate = octokit.paginate;
     }
-    listRelease() {
+    listReleases() {
         return __awaiter(this, void 0, void 0, function* () {
-            return (yield this.octokit.repos.listReleases(Input_1.Input.Github.REPO)).data;
+            return (yield this.octokitPaginate("GET /repos/:owner/:repo/releases", Input_1.Input.Github.REPO));
         });
     }
     dropRelease(release, dropTag) {
         return __awaiter(this, void 0, void 0, function* () {
             for (const asset of release.assets) {
-                yield this.octokit.repos.deleteReleaseAsset(Object.assign(Input_1.Input.Github.REPO, { asset_id: asset.id }));
-                core.debug(`drop release assets: [${release.name}] ${asset.name}`);
+                yield this.octokitRest.repos.deleteReleaseAsset(Object.assign(Input_1.Input.Github.REPO, { asset_id: asset.id }));
+                core.debug(`Release asset dropped: [${release.name}] ${asset.name}`);
             }
-            core.debug(`drop release: ${release.name}`);
-            yield this.octokit.repos.deleteRelease(Object.assign(Input_1.Input.Github.REPO, { release_id: release.id }));
+            core.debug(`Drop release: ${release.name}`);
+            yield this.octokitRest.repos.deleteRelease(Object.assign(Input_1.Input.Github.REPO, { release_id: release.id }));
             if (!dropTag)
                 return;
-            core.debug(`drop tag: ${release.tag_name}`);
-            yield this.octokit.git.deleteRef(Object.assign(Input_1.Input.Github.REPO, { ref: `tags/${release.tag_name}` }));
-            core.info(`release dropped: ${release.name}`);
+            core.debug(`Drop tag: ${release.tag_name}`);
+            yield this.octokitRest.git.deleteRef(Object.assign(Input_1.Input.Github.REPO, { ref: `tags/${release.tag_name}` }));
+            core.info(`Release dropped: ${release.name}`);
         });
     }
     static getInstance() {
@@ -9722,52 +9724,52 @@ const Github_1 = __nccwpck_require__(6703);
 const Input_1 = __nccwpck_require__(2660);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const release = yield Github_1.Github.getInstance().listRelease();
-        core.debug(`release list data: \n${release}`);
-        if (release.length <= 0) {
-            core.info(`No release found, action finish!`);
+        const allReleases = yield Github_1.Github.getInstance().listReleases();
+        core.debug(`Releases list data: \n${allReleases}`);
+        if (allReleases.length <= 0) {
+            core.info(`No releases found, action finished!`);
             return;
         }
-        core.info(`Release total count: ${release.length}`);
+        core.info(`Releases total count: ${allReleases.length}`);
         if (Input_1.Input.Release.DROP) {
-            const releases = release.filter((release) => {
-                (!release.draft && !release.prerelease);
+            const releases = allReleases.filter((release) => {
+                return !release.draft && !release.prerelease;
             });
-            if (release.length > 0) {
-                core.info(`Find release count: ${release.length}`);
-                yield dropRelease(releases, Input_1.Input.Release.KEEP_COUNT + 1, Input_1.Input.Release.DROP_TAG);
+            if (releases.length > 0) {
+                core.info(`Filtered release count: ${releases.length}`);
+                yield dropReleases(releases, Input_1.Input.Release.KEEP_COUNT + 1, Input_1.Input.Release.DROP_TAG);
             }
             else {
-                core.warning(`No release found, skip action.`);
+                core.warning(`No releases found, skip action.`);
             }
         }
         else {
             core.info(`Skip drop release.`);
         }
         if (Input_1.Input.PreRelease.DROP) {
-            const prereleases = release.filter((release) => {
-                (release.prerelease && !release.draft);
+            const prereleases = allReleases.filter((release) => {
+                return release.prerelease && !release.draft;
             });
             if (prereleases.length > 0) {
-                core.info(`Find pre-release count: ${prereleases.length}`);
-                yield dropRelease(prereleases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
+                core.info(`Filtered pre-release count: ${prereleases.length}`);
+                yield dropReleases(prereleases, Input_1.Input.PreRelease.KEEP_COUNT + 1, Input_1.Input.PreRelease.DROP_TAG);
             }
             else {
-                core.warning(`No pre-release found, skip action.`);
+                core.warning(`No pre-releases found, skip action.`);
             }
         }
         else {
             core.info(`Skip drop pre-release.`);
         }
         if (Input_1.Input.Draft.DROP) {
-            const draft = (yield Github_1.Github.getInstance().listRelease())
+            const drafts = (yield Github_1.Github.getInstance().listReleases())
                 .filter((release) => release.draft);
-            if (draft.length > 0) {
-                core.info(`Find draft count: ${draft.length}`);
-                yield dropRelease(draft, Input_1.Input.Draft.KEEP_COUNT + 1, false);
+            if (drafts.length > 0) {
+                core.info(`Filtered draft count: ${drafts.length}`);
+                yield dropReleases(drafts, Input_1.Input.Draft.KEEP_COUNT + 1, false);
             }
             else {
-                core.warning(`No draft found, skip action.`);
+                core.warning(`No drafts found, skip action.`);
             }
         }
         else {
@@ -9776,7 +9778,7 @@ function run() {
         core.info(`All task finished!`);
     });
 }
-function dropRelease(releases, keep, dropTag) {
+function dropReleases(releases, keep, dropTag) {
     return __awaiter(this, void 0, void 0, function* () {
         const sorted = releases.sort(function (rA, rB) {
             if (rB.published_at != null && rA.published_at) {
