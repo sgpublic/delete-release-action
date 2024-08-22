@@ -9733,7 +9733,7 @@ function run() {
         core.info(`Releases total count: ${allReleases.length}`);
         if (Input_1.Input.Release.DROP) {
             const releases = allReleases.filter((release) => {
-                (!release.draft && !release.prerelease);
+                return !release.draft && !release.prerelease;
             });
             if (releases.length > 0) {
                 core.info(`Filtered release count: ${releases.length}`);
@@ -9748,7 +9748,7 @@ function run() {
         }
         if (Input_1.Input.PreRelease.DROP) {
             const prereleases = allReleases.filter((release) => {
-                (release.prerelease && !release.draft);
+                return release.prerelease && !release.draft;
             });
             if (prereleases.length > 0) {
                 core.info(`Filtered pre-release count: ${prereleases.length}`);
