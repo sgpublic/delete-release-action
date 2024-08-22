@@ -13,7 +13,7 @@ async function run() {
 
     if (Input.Release.DROP) {
         const releases = allReleases.filter((release: any) => {
-            (!release.draft && !release.prerelease)
+            return !release.draft && !release.prerelease
         });
         if (releases.length > 0) {
             core.info(`Filtered release count: ${releases.length}`);
@@ -27,7 +27,7 @@ async function run() {
 
     if (Input.PreRelease.DROP) {
         const prereleases = allReleases.filter((release: any) => {
-            (release.prerelease && !release.draft)
+            return release.prerelease && !release.draft
         });
         if (prereleases.length > 0) {
             core.info(`Filtered pre-release count: ${prereleases.length}`);
